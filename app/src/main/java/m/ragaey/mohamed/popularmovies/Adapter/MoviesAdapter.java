@@ -2,7 +2,6 @@ package m.ragaey.mohamed.popularmovies.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,6 +50,11 @@ public class MoviesAdapter extends RecyclerView.Adapter<MyViewHolder> {
                 .load(poster)
                 .into(viewHolder.thumbnail);
 
+    }
+
+    public void setMovies(List<Movie> movie) {
+        movieList = movie;
+        notifyDataSetChanged();
     }
 
     @Override

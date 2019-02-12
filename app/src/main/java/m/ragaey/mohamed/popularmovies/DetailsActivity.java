@@ -1,33 +1,75 @@
 package m.ragaey.mohamed.popularmovies;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
+import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import m.ragaey.mohamed.popularmovies.Adapter.ReviewAdapter;
+import m.ragaey.mohamed.popularmovies.Adapter.TrailerAdapter;
+import m.ragaey.mohamed.popularmovies.Api.Client;
+import m.ragaey.mohamed.popularmovies.Api.Service;
 import m.ragaey.mohamed.popularmovies.Model.Movie;
+import m.ragaey.mohamed.popularmovies.Model.Review;
+import m.ragaey.mohamed.popularmovies.Model.ReviewResult;
+import m.ragaey.mohamed.popularmovies.Model.Trailer;
+import m.ragaey.mohamed.popularmovies.Model.TrailerResponse;
+import m.ragaey.mohamed.popularmovies.ViewModel.AppExecutors;
+import m.ragaey.mohamed.popularmovies.database.AppDatabase;
+import m.ragaey.mohamed.popularmovies.database.FavoriteEntry;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+
 
 public class DetailsActivity extends AppCompatActivity {
 
     TextView nameOfMovie, plotSynopsis, userRating, releaseDate;
     ImageView imageView;
+    private RecyclerView recyclerView;
+    private TrailerAdapter adapter;
+    private List<Trailer> trailerList;
+    private Movie favorite;
 
-    private final AppCompatActivity activity = DetailsActivity.this;
+    private AppDatabase mDb;
+    List<FavoriteEntry> entries = new ArrayList<>();
+    boolean exists;
 
     Movie movie;
     String thumbnail, movieName, synopsis, rating, dateOfRelease;
     int movie_id;
+
+    private final AppCompatActivity activity = DetailsActivity.this;
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -37,10 +79,11 @@ public class DetailsActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        initCollapsingToolbar();
+
+
+        mDb = AppDatabase.getInstance(getApplicationContext());
 
         imageView = (ImageView) findViewById(R.id.thumbnail_image_header);
         nameOfMovie = (TextView) findViewById(R.id.title);
@@ -64,7 +107,6 @@ public class DetailsActivity extends AppCompatActivity {
 
             Glide.with(this)
                     .load(poster)
-
                     .into(imageView);
 
             nameOfMovie.setText(movieName);
@@ -72,46 +114,212 @@ public class DetailsActivity extends AppCompatActivity {
             userRating.setText(rating);
             releaseDate.setText(dateOfRelease);
 
+            ((CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar)).setTitle(movieName);
+
         } else {
             Toast.makeText(this, "No API Data", Toast.LENGTH_SHORT).show();
         }
+        checkStatus(movieName);
+        initViews();
 
+    }
 
+    private void initViews()
+    {
+        trailerList = new ArrayList<>();
+        adapter = new TrailerAdapter(this, trailerList);
 
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view1);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
 
+        loadJSON();
+        loadReview();
+    }
 
-            final CollapsingToolbarLayout collapsingToolbarLayout =
-                    (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-            collapsingToolbarLayout.setTitle(" ");
-            AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.appbar);
-            appBarLayout.setExpanded(true);
-
-            appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-                boolean isShow = false;
-                int scrollRange = -1;
-
-                @Override
-                public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                    if (scrollRange == -1) {
-                        scrollRange = appBarLayout.getTotalScrollRange();
+    private void loadJSON(){
+        try{
+            if (BuildConfig.TMDB_API_KEY.isEmpty()){
+                Toast.makeText(getApplicationContext(), "Please get your API Key", Toast.LENGTH_SHORT).show();
+                return;
+            }else {
+                Client Client = new Client();
+                Service apiService = Client.getClient().create(Service.class);
+                Call<TrailerResponse> call = apiService.getMovieTrailer(movie_id, BuildConfig.TMDB_API_KEY);
+                call.enqueue(new Callback<TrailerResponse>() {
+                    @Override
+                    public void onResponse(Call<TrailerResponse> call, Response<TrailerResponse> response) {
+                        if (response.isSuccessful()) {
+                            if (response.body() != null) {
+                                List<Trailer> trailer = response.body().getResults();
+                                 recyclerView =  findViewById(R.id.recycler_view1);
+                                LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
+                                recyclerView.setLayoutManager(firstManager);
+                                recyclerView.setAdapter(new TrailerAdapter(getApplicationContext(), trailer));
+                                recyclerView.smoothScrollToPosition(0);
+                            }
+                        }
                     }
-                    if (scrollRange + verticalOffset == 0) {
-                        collapsingToolbarLayout.setTitle(getString(R.string.movie_details));
-                        isShow = true;
-                    } else if (isShow) {
-                        collapsingToolbarLayout.setTitle(" ");
-                        isShow = false;
+
+                    @Override
+                    public void onFailure(Call<TrailerResponse> call, Throwable t) {
+                        Log.d("Error", t.getMessage());
+                        Toast.makeText(DetailsActivity.this, "Error fetching trailer", Toast.LENGTH_SHORT).show();
+
                     }
-                }
-            });
+                });
+            }
+
+        } catch(Exception e){
+            Log.d("Error", e.getMessage());
+            Toast.makeText(this,e.toString(),Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void loadReview(){
+        try {
+            if (BuildConfig.TMDB_API_KEY.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Please get your API Key", Toast.LENGTH_SHORT).show();
+                return;
+            } else {
+                Client Client = new Client();
+                Service apiService = Client.getClient().create(Service.class);
+                Call<Review> call = apiService.getReview(movie_id, BuildConfig.TMDB_API_KEY);
+
+                call.enqueue(new Callback<Review>() {
+                    @Override
+                    public void onResponse(Call<Review> call, Response<Review> response) {
+                        if (response.isSuccessful()){
+                            if (response.body() != null){
+                                List<ReviewResult> reviewResults = response.body().getResults();
+                                LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
+                                recyclerView.setLayoutManager(firstManager);
+                                recyclerView.setAdapter(new ReviewAdapter(getApplicationContext(),reviewResults));
+                                recyclerView.smoothScrollToPosition(0);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Review> call, Throwable t) {
+
+                    }
+                });
+            }
+
+        } catch (Exception e) {
+            Log.d("Error", e.getMessage());
+            Toast.makeText(this, "unable to fetch data",Toast.LENGTH_SHORT).show();
         }
 
-
-    private void initCollapsingToolbar() {
     }
 
 
-    private void setSupportActionBar(Toolbar toolbar) {
+    public void saveFavorite(){
+        Double rate = movie.getVoteAverage();
+        final FavoriteEntry favoriteEntry = new FavoriteEntry(movie_id, movieName, rate, thumbnail, synopsis);
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                mDb.favoriteDao().insertFavorite(favoriteEntry);
+            }
+        });
     }
 
+    private void deleteFavorite(final int movie_id){
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                mDb.favoriteDao().deleteFavoriteWithId(movie_id);
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+    private Bitmap getBitmapFromView(View view) {
+        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(returnedBitmap);
+        Drawable bgDrawable =view.getBackground();
+        if (bgDrawable!=null) {
+            bgDrawable.draw(canvas);
+        }   else{
+            canvas.drawColor(Color.WHITE);
+        }
+        view.draw(canvas);
+        return returnedBitmap;
+    }
+
+
+
+    @SuppressLint("StaticFieldLeak")
+    private void checkStatus(final String movieName){
+        final MaterialFavoriteButton materialFavoriteButton = (MaterialFavoriteButton) findViewById(R.id.favorite_button);
+        new AsyncTask<Void, Void, Void>(){
+            @Override
+            protected Void doInBackground(Void... params){
+                entries.clear();
+                entries = mDb.favoriteDao().loadAll(movieName);
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Void aVoid){
+                super.onPostExecute(aVoid);
+                if (entries.size() > 0){
+                    materialFavoriteButton.setFavorite(true);
+                    materialFavoriteButton.setOnFavoriteChangeListener(
+                            new MaterialFavoriteButton.OnFavoriteChangeListener() {
+                                @Override
+                                public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+                                    if (favorite == true) {
+                                        saveFavorite();
+                                        Snackbar.make(buttonView, "Added to Favorite",
+                                                Snackbar.LENGTH_SHORT).show();
+                                    } else {
+                                        deleteFavorite(movie_id);
+                                        Snackbar.make(buttonView, "Removed from Favorite",
+                                                Snackbar.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+
+
+                }else {
+                    materialFavoriteButton.setOnFavoriteChangeListener(
+                            new MaterialFavoriteButton.OnFavoriteChangeListener() {
+                                @Override
+                                public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+                                    if (favorite == true) {
+                                        saveFavorite();
+                                        Snackbar.make(buttonView, "Added to Favorite",
+                                                Snackbar.LENGTH_SHORT).show();
+                                    } else {
+                                        int movie_id = getIntent().getExtras().getInt("id");
+                                        deleteFavorite(movie_id);
+                                        Snackbar.make(buttonView, "Removed from Favorite",
+                                                Snackbar.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                }
+            }
+        }.execute();
+    }
 }
+
