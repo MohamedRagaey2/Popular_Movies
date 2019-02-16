@@ -14,7 +14,7 @@ import java.util.List;
 public interface FavoriteDao {
 
     @Query("SELECT * FROM favoritetable")
-    LiveData<List<FavoriteEntry>> loadAllFavorite();
+    List<FavoriteEntry> loadAllFavorite();
 
     @Query("SELECT * FROM favoritetable WHERE title = :title")
     List<FavoriteEntry> loadAll(String title);

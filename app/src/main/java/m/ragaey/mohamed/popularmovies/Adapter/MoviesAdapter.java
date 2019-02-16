@@ -16,6 +16,7 @@ import java.util.List;
 
 import m.ragaey.mohamed.popularmovies.Adapter.MoviesAdapter.MyViewHolder;
 import m.ragaey.mohamed.popularmovies.DetailsActivity;
+import m.ragaey.mohamed.popularmovies.MainActivity;
 import m.ragaey.mohamed.popularmovies.Model.Movie;
 import m.ragaey.mohamed.popularmovies.R;
 
@@ -28,6 +29,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MyViewHolder> {
     public MoviesAdapter(Context mContext, List<Movie> movieList){
         this.mContext = mContext;
         this.movieList = movieList;
+    }
+
+    public MoviesAdapter(MainActivity mContext, List<android.graphics.Movie> movieList) {
     }
 
     @Override

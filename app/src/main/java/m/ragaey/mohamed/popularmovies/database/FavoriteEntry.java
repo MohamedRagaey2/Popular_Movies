@@ -38,13 +38,8 @@ public class FavoriteEntry {
         this.overview = overview;
     }
 
-    public FavoriteEntry(int id, int movieid, String title, Double userrating, String posterpath, String overview) {
-        this.id = id;
-        this.movieid = movieid;
-        this.title = title;
-        this.userrating = userrating;
-        this.posterpath = posterpath;
-        this.overview = overview;
+
+    public FavoriteEntry(String title, String userrating, String posterpath, String overview) {
     }
 
     public int getId() {
