@@ -51,6 +51,7 @@ import retrofit2.Response;
 
 
 
+
 public class DetailsActivity extends AppCompatActivity {
 
     TextView nameOfMovie, plotSynopsis, userRating, releaseDate;
