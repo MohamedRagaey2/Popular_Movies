@@ -6,6 +6,8 @@ import android.arch.lifecycle.ViewModel;
 import m.ragaey.mohamed.popularmovies.database.AppDatabase;
 import m.ragaey.mohamed.popularmovies.database.FavoriteEntry;
 
+
+
 public class AddFavoriteViewModel extends ViewModel {
 
     private LiveData<FavoriteEntry> favorite;

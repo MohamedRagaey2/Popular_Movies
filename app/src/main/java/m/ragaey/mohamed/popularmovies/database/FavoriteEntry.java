@@ -6,6 +6,8 @@ import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
+
+
 @Entity(tableName = "favoritetable")
 public class FavoriteEntry {
 
@@ -38,8 +40,13 @@ public class FavoriteEntry {
         this.overview = overview;
     }
 
-
-    public FavoriteEntry(String title, String userrating, String posterpath, String overview) {
+    public FavoriteEntry(int id, int movieid, String title, Double userrating, String posterpath, String overview) {
+        this.id = id;
+        this.movieid = movieid;
+        this.title = title;
+        this.userrating = userrating;
+        this.posterpath = posterpath;
+        this.overview = overview;
     }
 
     public int getId() {

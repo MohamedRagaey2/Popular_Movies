@@ -14,24 +14,20 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
-import m.ragaey.mohamed.popularmovies.Adapter.MoviesAdapter.MyViewHolder;
 import m.ragaey.mohamed.popularmovies.DetailsActivity;
-import m.ragaey.mohamed.popularmovies.MainActivity;
 import m.ragaey.mohamed.popularmovies.Model.Movie;
 import m.ragaey.mohamed.popularmovies.R;
 
 
-public class MoviesAdapter extends RecyclerView.Adapter<MyViewHolder> {
+public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHolder> {
 
     private Context mContext;
     private List<Movie> movieList;
 
+
     public MoviesAdapter(Context mContext, List<Movie> movieList){
         this.mContext = mContext;
         this.movieList = movieList;
-    }
-
-    public MoviesAdapter(MainActivity mContext, List<android.graphics.Movie> movieList) {
     }
 
     @Override
@@ -43,7 +39,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MyViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(final MyViewHolder viewHolder, int i){
+    public void onBindViewHolder(final MoviesAdapter.MyViewHolder viewHolder, int i){
         viewHolder.title.setText(movieList.get(i).getOriginalTitle());
         String vote = Double.toString(movieList.get(i).getVoteAverage());
         viewHolder.userrating.setText(vote);

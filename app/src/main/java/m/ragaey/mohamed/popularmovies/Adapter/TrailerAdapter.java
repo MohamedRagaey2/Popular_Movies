@@ -10,14 +10,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import m.ragaey.mohamed.popularmovies.Adapter.TrailerAdapter.MyViewHolder;
 
 import java.util.List;
 
 import m.ragaey.mohamed.popularmovies.Model.Trailer;
 import m.ragaey.mohamed.popularmovies.R;
 
-public class TrailerAdapter extends RecyclerView.Adapter<MyViewHolder> {
+public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHolder> {
 
     private Context mContext;
     private List<Trailer> trailerList;
@@ -35,8 +34,6 @@ public class TrailerAdapter extends RecyclerView.Adapter<MyViewHolder> {
         return new MyViewHolder(view);
 
     }
-
-
 
     @Override
     public void onBindViewHolder(final TrailerAdapter.MyViewHolder viewHolder, int i){

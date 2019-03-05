@@ -9,7 +9,6 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -22,10 +21,8 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -34,7 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 import m.ragaey.mohamed.popularmovies.Adapter.MoviesAdapter;
-import m.ragaey.mohamed.popularmovies.Adapter.TestAdapter;
+import m.ragaey.mohamed.popularmovies.Api.Client;
 import m.ragaey.mohamed.popularmovies.Api.Service;
 import m.ragaey.mohamed.popularmovies.Model.Movie;
 import m.ragaey.mohamed.popularmovies.Model.MoviesResponse;
@@ -50,59 +47,40 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static android.app.PendingIntent.getActivity;
-
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+
 
     private RecyclerView recyclerView;
     private MoviesAdapter adapter;
-    private List<android.graphics.Movie> movieList;
-    private ArrayList<Movie> moviesInstance = new ArrayList<>();
+    private List<Movie> movieList;
     ProgressDialog pd;
     private SwipeRefreshLayout swipeContainer;
     private AppCompatActivity activity = MainActivity.this;
+
     public static final String LOG_TAG = MoviesAdapter.class.getName();
+
     private static String LIST_STATE = "list_state";
     private Parcelable savedRecyclerLayoutState;
     private static final String BUNDLE_RECYCLER_LAYOUT = "recycler_layout";
-    int cacheSize = 10 * 1024 * 1024; // 10 MiB
+    private ArrayList<Movie> moviesInstance = new ArrayList<>();
 
+    int cacheSize = 10 * 1024 * 1024; // 10 MiB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initViews();
 
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-
-        //For testing the recipe collection sorting alphabetically
-        TestAdapter testAdapter = new TestAdapter(LayoutInflater.from(this));
-        recyclerView.setAdapter(testAdapter);
-        testAdapter.setMovie(movieList);
-
-
-
-
-    }
-
-    public Resources getResources(){
-        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        } else {
-            recyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+        if (savedInstanceState != null){
+            moviesInstance = savedInstanceState.getParcelableArrayList(LIST_STATE);
+            savedRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
+            displayData();
+        }else {
+            initViews();
         }
-        return null;
-
     }
 
-    public Activity getActivity(){
-        Activity context = this;
-        do return context;
-        while (true);
-
-    }
     private void displayData(){
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         adapter = new MoviesAdapter(this, moviesInstance);
@@ -123,15 +101,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+
     private void initViews(){
-
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-
-        movieList = new ArrayList<>();
-        adapter = new MoviesAdapter(this, movieList);
-
-
-
         if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         } else {
@@ -140,64 +112,56 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
-
-
-        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.main_content);
-        swipeContainer.setColorSchemeResources(android.R.color.holo_orange_dark);
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener(){
-            @Override
-            public void onRefresh(){
-                initViews();
-                Toast.makeText(MainActivity.this, "Movies Refreshed", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        checkSortOrder();
-
+        loadJSON();
     }
 
     private void initViews2(){
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-
-        movieList = new ArrayList<>();
-        adapter = new MoviesAdapter(this, movieList);
-
-        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        } else {
-            recyclerView.setLayoutManager(new GridLayoutManager(this, 4));
-        }
-
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
-
         getAllFavorite();
     }
 
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putParcelableArrayList(LIST_STATE, moviesInstance);
+        savedInstanceState.putParcelable(BUNDLE_RECYCLER_LAYOUT, recyclerView.getLayoutManager().onSaveInstanceState());
     }
 
-    private void loadJSON(){
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        moviesInstance = savedInstanceState.getParcelableArrayList(LIST_STATE);
+        savedRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
+        super.onRestoreInstanceState(savedInstanceState);
+    }
 
-        try{
-            if (BuildConfig.TMDB_API_KEY.isEmpty()){
+    public Activity getActivity(){
+        Context context = this;
+        while (context instanceof ContextWrapper){
+            if (context instanceof Activity){
+                return (Activity) context;
+            }
+            context = ((ContextWrapper) context).getBaseContext();
+        }
+        return null;
+
+    }
+
+    private void loadJSON() {
+
+        try {
+            if (BuildConfig.TMDB_API_KEY.isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Please obtain API Key firstly from themoviedb.org", Toast.LENGTH_SHORT).show();
                 pd.dismiss();
                 return;
             }
+
             Cache cache = new Cache(getCacheDir(), cacheSize);
 
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
                     .cache(cache)
                     .addInterceptor(new Interceptor() {
                         @Override
-                        public okhttp3.Response intercept(Chain chain)
+                        public okhttp3.Response intercept(Interceptor.Chain chain)
                                 throws IOException {
                             Request request = chain.request();
                             if (!isNetworkAvailable()) {
@@ -220,23 +184,29 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             Retrofit retrofit = builder.build();
             Service apiService = retrofit.create(Service.class);
 
-            //Client Client = new Client();
+            Client Client = new Client();
             //Service apiService =
-            //Client.getClient().create(Service.class);
+            Client.getClient().create(Service.class);
             Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.TMDB_API_KEY);
-
             call.enqueue(new Callback<MoviesResponse>() {
+
                 @Override
                 public void onResponse(Call<MoviesResponse> call, Response<MoviesResponse> response) {
-                    List<Movie> movies = response.body().getResults();
-                    Collections.sort(movies, Movie.BY_NAME_ALPHABETICAL);
-                    recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movies));
-                    recyclerView.smoothScrollToPosition(0);
-                    if (swipeContainer.isRefreshing()){
-                        swipeContainer.setRefreshing(false);
+                    if (response.body() != null) {
+                        List<Movie> movies = response.body().getResults();
+                        moviesInstance.clear();
+                        moviesInstance.addAll(movies);
+                        Collections.sort(movies, Movie.BY_NAME_ALPHABETICAL);
+                        recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movies));
+                        recyclerView.smoothScrollToPosition(0);
+                        if (swipeContainer.isRefreshing()) {
+                            swipeContainer.setRefreshing(false);
+                        }
+
                     }
 
                 }
+
 
                 @Override
                 public void onFailure(Call<MoviesResponse> call, Throwable t) {
@@ -266,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
                     .cache(cache)
                     .addInterceptor(new Interceptor() {
-                        @Override public okhttp3.Response intercept(Chain chain)
+                        @Override public okhttp3.Response intercept(Interceptor.Chain chain)
                                 throws IOException {
                             Request request = chain.request();
                             if (!isNetworkAvailable()) {
@@ -316,14 +286,25 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu){
+    public boolean onCreateOptionsMenu(Menu menu) {
+
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
+    public boolean onOptionsItemSelected(MenuItem item) {
+
         switch (item.getItemId()){
             case R.id.menu_sort_group:
                 Intent intent = new Intent(this, SettingsActivity.class);
@@ -334,13 +315,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s){
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         Log.d(LOG_TAG, "Preferences updated");
         checkSortOrder();
     }
 
-    private void checkSortOrder(){
+    private void checkSortOrder() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String sortOrder = preferences.getString(
                 this.getString(R.string.pref_sort_order_key),
@@ -359,18 +341,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
-        if (movieList.isEmpty()){
+        if (movieList.isEmpty()) {
             checkSortOrder();
-        }else{
+        } else {
 
             checkSortOrder();
         }
     }
 
     private void getAllFavorite(){
-
 
         MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getFavorite().observe(this, new Observer<List<FavoriteEntry>>() {
@@ -392,6 +373,4 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             }
         });
     }
-
-
 }

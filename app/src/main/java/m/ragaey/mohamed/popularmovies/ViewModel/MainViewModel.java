@@ -10,6 +10,7 @@ import java.util.List;
 import m.ragaey.mohamed.popularmovies.database.AppDatabase;
 import m.ragaey.mohamed.popularmovies.database.FavoriteEntry;
 
+
 public class MainViewModel extends AndroidViewModel {
 
     // Constant for logging

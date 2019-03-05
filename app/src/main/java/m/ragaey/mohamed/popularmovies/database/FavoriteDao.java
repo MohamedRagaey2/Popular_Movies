@@ -10,11 +10,13 @@ import android.arch.persistence.room.Update;
 
 import java.util.List;
 
+
+
 @Dao
 public interface FavoriteDao {
 
     @Query("SELECT * FROM favoritetable")
-    List<FavoriteEntry> loadAllFavorite();
+    LiveData<List<FavoriteEntry>> loadAllFavorite();
 
     @Query("SELECT * FROM favoritetable WHERE title = :title")
     List<FavoriteEntry> loadAll(String title);

@@ -8,10 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import m.ragaey.mohamed.popularmovies.R;
-import m.ragaey.mohamed.popularmovies.Model.ReviewResult;
-
 import java.util.List;
+
+import m.ragaey.mohamed.popularmovies.Model.ReviewResult;
+import m.ragaey.mohamed.popularmovies.R;
+
 
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.MyViewHolder> {

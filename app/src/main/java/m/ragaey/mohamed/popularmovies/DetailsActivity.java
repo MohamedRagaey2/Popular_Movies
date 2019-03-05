@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,7 +29,10 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
+import com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,33 +48,27 @@ import m.ragaey.mohamed.popularmovies.Model.TrailerResponse;
 import m.ragaey.mohamed.popularmovies.ViewModel.AppExecutors;
 import m.ragaey.mohamed.popularmovies.database.AppDatabase;
 import m.ragaey.mohamed.popularmovies.database.FavoriteEntry;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-
-
 
 public class DetailsActivity extends AppCompatActivity {
 
     TextView nameOfMovie, plotSynopsis, userRating, releaseDate;
     ImageView imageView;
+
     private RecyclerView recyclerView;
     private TrailerAdapter adapter;
     private List<Trailer> trailerList;
-    private Movie favorite;
 
+    private Movie favorite;
+    private final AppCompatActivity activity = DetailsActivity.this;
     private AppDatabase mDb;
     List<FavoriteEntry> entries = new ArrayList<>();
-    boolean exists;
 
     Movie movie;
     String thumbnail, movieName, synopsis, rating, dateOfRelease;
     int movie_id;
-
-    private final AppCompatActivity activity = DetailsActivity.this;
-
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -80,11 +78,10 @@ public class DetailsActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
-
-        mDb = AppDatabase.getInstance(getApplicationContext());
 
         imageView = (ImageView) findViewById(R.id.thumbnail_image_header);
         nameOfMovie = (TextView) findViewById(R.id.title);
@@ -125,8 +122,10 @@ public class DetailsActivity extends AppCompatActivity {
 
     }
 
-    private void initViews()
-    {
+
+
+
+    private void initViews(){
         trailerList = new ArrayList<>();
         adapter = new TrailerAdapter(this, trailerList);
 
@@ -138,46 +137,49 @@ public class DetailsActivity extends AppCompatActivity {
 
         loadJSON();
         loadReview();
-    }
 
+    }
     private void loadJSON(){
+
+        int movie_id = getIntent().getExtras().getInt("id");
+
         try{
             if (BuildConfig.TMDB_API_KEY.isEmpty()){
-                Toast.makeText(getApplicationContext(), "Please get your API Key", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Please obtain your API Key from themoviedb.org", Toast.LENGTH_SHORT).show();
                 return;
-            }else {
-                Client Client = new Client();
-                Service apiService = Client.getClient().create(Service.class);
-                Call<TrailerResponse> call = apiService.getMovieTrailer(movie_id, BuildConfig.TMDB_API_KEY);
-                call.enqueue(new Callback<TrailerResponse>() {
-                    @Override
-                    public void onResponse(Call<TrailerResponse> call, Response<TrailerResponse> response) {
-                        if (response.isSuccessful()) {
-                            if (response.body() != null) {
-                                List<Trailer> trailer = response.body().getResults();
-                                 recyclerView =  findViewById(R.id.recycler_view1);
-                                LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
-                                recyclerView.setLayoutManager(firstManager);
-                                recyclerView.setAdapter(new TrailerAdapter(getApplicationContext(), trailer));
-                                recyclerView.smoothScrollToPosition(0);
-                            }
+            }
+            Client Client = new Client();
+            Service apiService = Client.getClient().create(Service.class);
+            Call<TrailerResponse> call = apiService.getMovieTrailer(movie_id, BuildConfig.TMDB_API_KEY);
+            call.enqueue(new Callback<TrailerResponse>() {
+                @Override
+                public void onResponse(Call<TrailerResponse> call, Response<TrailerResponse> response) {
+                    if (response.isSuccessful()) {
+                        if (response.body() != null) {
+                            List<Trailer> trailer = response.body().getResults();
+                            MultiSnapRecyclerView recyclerView = (MultiSnapRecyclerView) findViewById(R.id.recycler_view1);
+                            LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
+                            recyclerView.setLayoutManager(firstManager);
+                            recyclerView.setAdapter(new TrailerAdapter(getApplicationContext(), trailer));
+                            recyclerView.smoothScrollToPosition(0);
                         }
                     }
+                }
 
-                    @Override
-                    public void onFailure(Call<TrailerResponse> call, Throwable t) {
-                        Log.d("Error", t.getMessage());
-                        Toast.makeText(DetailsActivity.this, "Error fetching trailer", Toast.LENGTH_SHORT).show();
+                @Override
+                public void onFailure(Call<TrailerResponse> call, Throwable t) {
+                    Log.d("Error", t.getMessage());
+                    Toast.makeText(DetailsActivity.this, "Error fetching trailer", Toast.LENGTH_SHORT).show();
 
-                    }
-                });
-            }
+                }
+            });
 
-        } catch(Exception e){
-            Log.d("Error", e.getMessage());
-            Toast.makeText(this,e.toString(),Toast.LENGTH_SHORT).show();
-        }
+    } catch(Exception e){
+        Log.d("Error", e.getMessage());
+        Toast.makeText(this,e.toString(),Toast.LENGTH_SHORT).show();
     }
+}
+
 
     private void loadReview(){
         try {
@@ -195,10 +197,11 @@ public class DetailsActivity extends AppCompatActivity {
                         if (response.isSuccessful()){
                             if (response.body() != null){
                                 List<ReviewResult> reviewResults = response.body().getResults();
+                                MultiSnapRecyclerView recyclerView2 = (MultiSnapRecyclerView) findViewById(R.id.review_recyclerview);
                                 LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
-                                recyclerView.setLayoutManager(firstManager);
-                                recyclerView.setAdapter(new ReviewAdapter(getApplicationContext(),reviewResults));
-                                recyclerView.smoothScrollToPosition(0);
+                                recyclerView2.setLayoutManager(firstManager);
+                                recyclerView2.setAdapter(new ReviewAdapter(getApplicationContext(), reviewResults));
+                                recyclerView2.smoothScrollToPosition(0);
                             }
                         }
                     }
@@ -216,7 +219,6 @@ public class DetailsActivity extends AppCompatActivity {
         }
 
     }
-
 
     public void saveFavorite(){
         Double rate = movie.getVoteAverage();
@@ -241,18 +243,44 @@ public class DetailsActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        getMenuInflater().inflate(R.menu.detail_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
+        switch (item.getItemId()) {
+            case R.id.share:
+                shareContent();
+
+                return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void shareContent(){
 
+        Bitmap bitmap =getBitmapFromView(imageView);
+        try {
+            File file = new File(this.getExternalCacheDir(),"logicchip.png");
+            FileOutputStream fOut = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+            fOut.flush();
+            fOut.close();
+            file.setReadable(true, false);
+            final Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(Intent.EXTRA_TEXT, movieName);
+            intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+            intent.setType("image/png");
+            startActivity(Intent.createChooser(intent, "Share image via"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 
     private Bitmap getBitmapFromView(View view) {
         Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),Bitmap.Config.ARGB_8888);
@@ -266,7 +294,6 @@ public class DetailsActivity extends AppCompatActivity {
         view.draw(canvas);
         return returnedBitmap;
     }
-
 
 
     @SuppressLint("StaticFieldLeak")
@@ -323,4 +350,3 @@ public class DetailsActivity extends AppCompatActivity {
         }.execute();
     }
 }
-

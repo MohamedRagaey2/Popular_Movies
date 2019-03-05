@@ -5,6 +5,8 @@ import android.arch.lifecycle.ViewModelProvider;
 
 import m.ragaey.mohamed.popularmovies.database.AppDatabase;
 
+
+
 public class AddFavoriteViewModelFactory extends ViewModelProvider.NewInstanceFactory {
 
     private final AppDatabase mDb;
