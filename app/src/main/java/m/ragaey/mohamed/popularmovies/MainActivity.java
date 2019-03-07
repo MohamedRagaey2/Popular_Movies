@@ -341,9 +341,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     @Override
-    public void onResume() {
+    public void onResume(){
         super.onResume();
-        
+        if (movieList.isEmpty()){
+            checkSortOrder();
+        }else{
+
+            checkSortOrder();
+        }
     }
 
     private void getAllFavorite(){
