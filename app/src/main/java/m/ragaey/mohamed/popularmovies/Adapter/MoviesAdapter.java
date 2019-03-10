@@ -2,6 +2,7 @@ package m.ragaey.mohamed.popularmovies.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,8 +31,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
         this.movieList = movieList;
     }
 
+    @NonNull
     @Override
-    public MoviesAdapter.MyViewHolder onCreateViewHolder(ViewGroup viewGroup, int i){
+    public MoviesAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i){
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.movie_card, viewGroup, false);
 
@@ -39,7 +41,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
     }
 
     @Override
-    public void onBindViewHolder(final MoviesAdapter.MyViewHolder viewHolder, int i){
+    public void onBindViewHolder(@NonNull final MoviesAdapter.MyViewHolder viewHolder, int i){
         viewHolder.title.setText(movieList.get(i).getOriginalTitle());
         String vote = Double.toString(movieList.get(i).getVoteAverage());
         viewHolder.userrating.setText(vote);
