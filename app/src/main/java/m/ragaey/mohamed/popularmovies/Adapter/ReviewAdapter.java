@@ -1,6 +1,7 @@
 package m.ragaey.mohamed.popularmovies.Adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
@@ -25,8 +26,9 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.MyViewHold
 
     }
 
+    @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
 
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.review_card, viewGroup, false);
         return new MyViewHolder(view);
@@ -34,7 +36,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.MyViewHold
     }
 
     @Override
-    public void onBindViewHolder (final MyViewHolder viewHolder, int i){
+    public void onBindViewHolder (@NonNull final MyViewHolder viewHolder, int i){
         viewHolder.title.setText(reviewResults.get(i).getAuthor());
         String url = reviewResults.get(i).getUrl();
         viewHolder.url.setText(url);

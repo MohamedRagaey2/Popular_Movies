@@ -3,6 +3,7 @@ package m.ragaey.mohamed.popularmovies.Adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +28,9 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
 
     }
 
+    @NonNull
     @Override
-    public TrailerAdapter.MyViewHolder onCreateViewHolder(ViewGroup viewGroup, int i){
+    public TrailerAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i){
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.trailer_card, viewGroup, false);
         return new MyViewHolder(view);
@@ -36,7 +38,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
     }
 
     @Override
-    public void onBindViewHolder(final TrailerAdapter.MyViewHolder viewHolder, int i){
+    public void onBindViewHolder(@NonNull final TrailerAdapter.MyViewHolder viewHolder, int i){
         viewHolder.title.setText(trailerList.get(i).getName());
 
     }
