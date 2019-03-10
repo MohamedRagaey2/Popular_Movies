@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     @Override
                     public void onResponse(Call<MoviesResponse> call, Response<MoviesResponse> response) {
                         List<Movie> movies = response.body().getResults();
-                        //moviesInstance.clear();
+                        moviesInstance.clear();
                         moviesInstance.addAll(movies);
                         recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movies));
                         recyclerView.smoothScrollToPosition(0);
