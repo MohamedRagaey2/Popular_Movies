@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.TMDB_API_KEY);
                 call.enqueue(new Callback<MoviesResponse>() {
                     @Override
-                    public void onResponse(@NonNull Call<MoviesResponse> call, Response<MoviesResponse> response) {
+                    public void onResponse(@NonNull Call<MoviesResponse> call, @NonNull Response<MoviesResponse> response) {
                         if (response.isSuccessful()) {Toast.makeText(MainActivity.this, "the value is " + moviesInstance.size(), Toast.LENGTH_SHORT).show();
 
                             if (response.body() != null) {
@@ -222,73 +222,73 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
-        private boolean isNetworkAvailable () {
-            ConnectivityManager connectivityManager
-                    = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            assert connectivityManager != null;
-            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-        }
+    private boolean isNetworkAvailable () {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert connectivityManager != null;
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 
 
-        @Override
-        public boolean onCreateOptionsMenu (Menu menu){
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu){
 
-            getMenuInflater().inflate(R.menu.main_menu, menu);
-            return true;
-        }
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
 
-        @Override
-        public boolean onOptionsItemSelected (MenuItem item){
+    @Override
+    public boolean onOptionsItemSelected (MenuItem item){
 
-            switch (item.getItemId()) {
-                case R.id.menu_settings:
-                    Intent intent = new Intent(this, SettingsActivity.class);
-                    startActivity(intent);
-                    return true;
-                default:
-                    return super.onOptionsItemSelected(item);
-            }
-        }
-
-
-        @Override
-        public void onSharedPreferenceChanged (SharedPreferences sharedPreferences, String s){
-            Log.d(LOG_TAG, "Preferences updated");
-            checkSortOrder();
-        }
-
-        private String checkSortOrder () {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-            return preferences.getString(
-                    this.getString(R.string.pref_sort_order_key),
-                    this.getString(R.string.sort_most_popular)
-            );
-        }
-
-        private void getAllFavorite () {
-
-            MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-            viewModel.getFavorite().observe(this, new Observer<List<FavoriteEntry>>() {
-                @Override
-                public void onChanged(@Nullable List<FavoriteEntry> imageEntries) {
-                    List<Movie> movies = new ArrayList<>();
-                    assert imageEntries != null;
-                    for (FavoriteEntry entry : imageEntries) {
-                        Movie movie = new Movie();
-                        movie.setId(entry.getMovieid());
-                        movie.setOverview(entry.getOverview());
-                        movie.setOriginalTitle(entry.getTitle());
-                        movie.setPosterPath(entry.getPosterpath());
-                        movie.setVoteAverage(entry.getUserrating());
-
-                        movies.add(movie);
-                    }
-
-                    adapter.setMovies(movies);
-                }
-            });
+        switch (item.getItemId()) {
+            case R.id.menu_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
+
+
+    @Override
+    public void onSharedPreferenceChanged (SharedPreferences sharedPreferences, String s){
+        Log.d(LOG_TAG, "Preferences updated");
+        checkSortOrder();
+    }
+
+    private String checkSortOrder () {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        return preferences.getString(
+                this.getString(R.string.pref_sort_order_key),
+                this.getString(R.string.sort_most_popular)
+        );
+    }
+
+    private void getAllFavorite () {
+
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        viewModel.getFavorite().observe(this, new Observer<List<FavoriteEntry>>() {
+            @Override
+            public void onChanged(@Nullable List<FavoriteEntry> imageEntries) {
+                List<Movie> movies = new ArrayList<>();
+                assert imageEntries != null;
+                for (FavoriteEntry entry : imageEntries) {
+                    Movie movie = new Movie();
+                    movie.setId(entry.getMovieid());
+                    movie.setOverview(entry.getOverview());
+                    movie.setOriginalTitle(entry.getTitle());
+                    movie.setPosterPath(entry.getPosterpath());
+                    movie.setVoteAverage(entry.getUserrating());
+
+                    movies.add(movie);
+                }
+
+                adapter.setMovies(movies);
+            }
+        });
+    }
+}
 
