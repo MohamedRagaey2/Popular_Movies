@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -35,6 +36,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import m.ragaey.mohamed.popularmovies.Adapter.ReviewAdapter;
 import m.ragaey.mohamed.popularmovies.Adapter.TrailerAdapter;
@@ -79,7 +81,7 @@ public class DetailsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
 
 
@@ -141,7 +143,7 @@ public class DetailsActivity extends AppCompatActivity {
     }
     private void loadJSON(){
 
-        int movie_id = getIntent().getExtras().getInt("id");
+        int movie_id = Objects.requireNonNull(getIntent().getExtras()).getInt("id");
 
         try{
             if (BuildConfig.TMDB_API_KEY.isEmpty()){
@@ -149,11 +151,11 @@ public class DetailsActivity extends AppCompatActivity {
                 return;
             }
             Client Client = new Client();
-            Service apiService = Client.getClient().create(Service.class);
+            Service apiService = m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
             Call<TrailerResponse> call = apiService.getMovieTrailer(movie_id, BuildConfig.TMDB_API_KEY);
             call.enqueue(new Callback<TrailerResponse>() {
                 @Override
-                public void onResponse(Call<TrailerResponse> call, Response<TrailerResponse> response) {
+                public void onResponse(@NonNull Call<TrailerResponse> call, @NonNull Response<TrailerResponse> response) {
                     if (response.isSuccessful()) {
                         if (response.body() != null) {
                             List<Trailer> trailer = response.body().getResults();
@@ -167,7 +169,7 @@ public class DetailsActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<TrailerResponse> call, Throwable t) {
+                public void onFailure(@NonNull Call<TrailerResponse> call, @NonNull Throwable t) {
                     Log.d("Error", t.getMessage());
                     Toast.makeText(DetailsActivity.this, "Error fetching trailer", Toast.LENGTH_SHORT).show();
 
@@ -185,15 +187,14 @@ public class DetailsActivity extends AppCompatActivity {
         try {
             if (BuildConfig.TMDB_API_KEY.isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Please get your API Key", Toast.LENGTH_SHORT).show();
-                return;
             } else {
                 Client Client = new Client();
-                Service apiService = Client.getClient().create(Service.class);
+                Service apiService = m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
                 Call<Review> call = apiService.getReview(movie_id, BuildConfig.TMDB_API_KEY);
 
                 call.enqueue(new Callback<Review>() {
                     @Override
-                    public void onResponse(Call<Review> call, Response<Review> response) {
+                    public void onResponse(@NonNull Call<Review> call, @NonNull Response<Review> response) {
                         if (response.isSuccessful()){
                             if (response.body() != null){
                                 List<ReviewResult> reviewResults = response.body().getResults();
@@ -207,7 +208,7 @@ public class DetailsActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<Review> call, Throwable t) {
+                    public void onFailure(@NonNull Call<Review> call, @NonNull Throwable t) {
 
                     }
                 });
@@ -315,7 +316,7 @@ public class DetailsActivity extends AppCompatActivity {
                             new MaterialFavoriteButton.OnFavoriteChangeListener() {
                                 @Override
                                 public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
-                                    if (favorite == true) {
+                                    if (favorite) {
                                         saveFavorite();
                                         Snackbar.make(buttonView, "Added to Favorite",
                                                 Snackbar.LENGTH_SHORT).show();
@@ -333,7 +334,7 @@ public class DetailsActivity extends AppCompatActivity {
                             new MaterialFavoriteButton.OnFavoriteChangeListener() {
                                 @Override
                                 public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
-                                    if (favorite == true) {
+                                    if (favorite) {
                                         saveFavorite();
                                         Snackbar.make(buttonView, "Added to Favorite",
                                                 Snackbar.LENGTH_SHORT).show();

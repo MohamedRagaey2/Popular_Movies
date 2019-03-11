@@ -14,6 +14,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -153,11 +154,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
                 Client Client = new Client();
                 Service apiService =
-                        Client.getClient().create(Service.class);
+                        m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
                 Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.TMDB_API_KEY);
                 call.enqueue(new Callback<MoviesResponse>() {
                     @Override
-                    public void onResponse(Call<MoviesResponse> call, Response<MoviesResponse> response) {
+                    public void onResponse(@NonNull Call<MoviesResponse> call, Response<MoviesResponse> response) {
                         if (response.isSuccessful()) {Toast.makeText(MainActivity.this, "the value is " + moviesInstance.size(), Toast.LENGTH_SHORT).show();
 
                             if (response.body() != null) {
@@ -171,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     }
 
                     @Override
-                    public void onFailure(Call<MoviesResponse> call, Throwable t) {
+                    public void onFailure(@NonNull Call<MoviesResponse> call, @NonNull Throwable t) {
                         Log.d("Error", t.getMessage());
                         Toast.makeText(MainActivity.this, "Error Fetching Data!", Toast.LENGTH_SHORT).show();
 
@@ -194,11 +195,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
                 Client Client = new Client();
                 Service apiService =
-                        Client.getClient().create(Service.class);
+                        m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
                 Call<MoviesResponse> call = apiService.getTopRatedMovies(BuildConfig.TMDB_API_KEY);
                 call.enqueue(new Callback<MoviesResponse>() {
                     @Override
-                    public void onResponse(Call<MoviesResponse> call, Response<MoviesResponse> response) {
+                    public void onResponse(@NonNull Call<MoviesResponse> call, @NonNull Response<MoviesResponse> response) {
+                        assert response.body() != null;
                         List<Movie> movies = response.body().getResults();
                         moviesInstance.clear();
                         moviesInstance.addAll(movies);
@@ -207,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     }
 
                     @Override
-                    public void onFailure(Call<MoviesResponse> call, Throwable t) {
+                    public void onFailure(@NonNull Call<MoviesResponse> call, @NonNull Throwable t) {
                         Log.d("Error", t.getMessage());
                         Toast.makeText(MainActivity.this, "Error Fetching Data!", Toast.LENGTH_SHORT).show();
 
@@ -223,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         private boolean isNetworkAvailable () {
             ConnectivityManager connectivityManager
                     = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            assert connectivityManager != null;
             NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
             return activeNetworkInfo != null && activeNetworkInfo.isConnected();
         }
@@ -257,12 +260,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         private String checkSortOrder () {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            String sortOrder = preferences.getString(
+
+            return preferences.getString(
                     this.getString(R.string.pref_sort_order_key),
                     this.getString(R.string.sort_most_popular)
             );
-
-            return sortOrder;
         }
 
         private void getAllFavorite () {
@@ -272,6 +274,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 @Override
                 public void onChanged(@Nullable List<FavoriteEntry> imageEntries) {
                     List<Movie> movies = new ArrayList<>();
+                    assert imageEntries != null;
                     for (FavoriteEntry entry : imageEntries) {
                         Movie movie = new Movie();
                         movie.setId(entry.getMovieid());

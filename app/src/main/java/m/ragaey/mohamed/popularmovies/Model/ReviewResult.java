@@ -38,7 +38,7 @@ public class ReviewResult implements Parcelable
     }
             ;
 
-    protected ReviewResult(Parcel in) {
+    private ReviewResult(Parcel in) {
         this.author = ((String) in.readValue((String.class.getClassLoader())));
         this.content = ((String) in.readValue((String.class.getClassLoader())));
         this.id = ((String) in.readValue((String.class.getClassLoader())));

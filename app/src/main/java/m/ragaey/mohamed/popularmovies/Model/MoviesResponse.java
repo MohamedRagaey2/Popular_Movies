@@ -75,7 +75,7 @@ public class MoviesResponse implements Parcelable {
     public MoviesResponse() {
     }
 
-    protected MoviesResponse(Parcel in) {
+    private MoviesResponse(Parcel in) {
         this.page = in.readInt();
         this.results = in.createTypedArrayList(Movie.CREATOR);
         this.totalResults = in.readInt();

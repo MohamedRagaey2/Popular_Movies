@@ -43,7 +43,7 @@ public class Review implements Parcelable
     }
             ;
 
-    protected Review(Parcel in) {
+    private Review(Parcel in) {
         this.id = ((Integer) in.readValue((Integer.class.getClassLoader())));
         this.page = ((Integer) in.readValue((Integer.class.getClassLoader())));
         in.readList(this.results, (m.ragaey.mohamed.popularmovies.Model.ReviewResult.class.getClassLoader()));
