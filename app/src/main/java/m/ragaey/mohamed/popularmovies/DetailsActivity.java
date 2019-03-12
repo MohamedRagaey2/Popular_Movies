@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.Snackbar;
@@ -40,7 +39,6 @@ import java.util.Objects;
 
 import m.ragaey.mohamed.popularmovies.Adapter.ReviewAdapter;
 import m.ragaey.mohamed.popularmovies.Adapter.TrailerAdapter;
-import m.ragaey.mohamed.popularmovies.Api.Client;
 import m.ragaey.mohamed.popularmovies.Api.Service;
 import m.ragaey.mohamed.popularmovies.Model.Movie;
 import m.ragaey.mohamed.popularmovies.Model.Review;
@@ -74,22 +72,22 @@ public class DetailsActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+    public void onCreate( Bundle savedInstanceState,  PersistableBundle persistentState) {
         super.onCreate(savedInstanceState, persistentState);
         setContentView(R.layout.activity_details);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar =  findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
 
 
-        imageView = (ImageView) findViewById(R.id.thumbnail_image_header);
-        nameOfMovie = (TextView) findViewById(R.id.title);
-        plotSynopsis = (TextView) findViewById(R.id.plotsynopsis);
-        userRating = (TextView) findViewById(R.id.userrating);
-        releaseDate = (TextView) findViewById(R.id.releasedate);
+        imageView =  findViewById(R.id.thumbnail_image_header);
+        nameOfMovie =  findViewById(R.id.title);
+        plotSynopsis =  findViewById(R.id.plotsynopsis);
+        userRating =  findViewById(R.id.userrating);
+        releaseDate =  findViewById(R.id.releasedate);
 
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.hasExtra("movies")) {
@@ -109,6 +107,7 @@ public class DetailsActivity extends AppCompatActivity {
                     .load(poster)
                     .into(imageView);
 
+
             nameOfMovie.setText(movieName);
             plotSynopsis.setText(synopsis);
             userRating.setText(rating);
@@ -127,11 +126,12 @@ public class DetailsActivity extends AppCompatActivity {
 
 
 
+    @SuppressLint("NewApi")
     private void initViews(){
         trailerList = new ArrayList<>();
         adapter = new TrailerAdapter(this, trailerList);
 
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view1);
+        recyclerView =  findViewById(R.id.recycler_view1);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setAdapter(adapter);
@@ -141,6 +141,7 @@ public class DetailsActivity extends AppCompatActivity {
         loadReview();
 
     }
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void loadJSON(){
 
         int movie_id = Objects.requireNonNull(getIntent().getExtras()).getInt("id");
@@ -150,7 +151,7 @@ public class DetailsActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Please obtain your API Key from themoviedb.org", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Client Client = new Client();
+            //Client Client = new Client();
             Service apiService = m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
             Call<TrailerResponse> call = apiService.getMovieTrailer(movie_id, BuildConfig.TMDB_API_KEY);
             call.enqueue(new Callback<TrailerResponse>() {
@@ -159,7 +160,7 @@ public class DetailsActivity extends AppCompatActivity {
                     if (response.isSuccessful()) {
                         if (response.body() != null) {
                             List<Trailer> trailer = response.body().getResults();
-                            MultiSnapRecyclerView recyclerView = (MultiSnapRecyclerView) findViewById(R.id.recycler_view1);
+                            MultiSnapRecyclerView recyclerView =  findViewById(R.id.recycler_view1);
                             LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
                             recyclerView.setLayoutManager(firstManager);
                             recyclerView.setAdapter(new TrailerAdapter(getApplicationContext(), trailer));
@@ -188,7 +189,7 @@ public class DetailsActivity extends AppCompatActivity {
             if (BuildConfig.TMDB_API_KEY.isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Please get your API Key", Toast.LENGTH_SHORT).show();
             } else {
-                Client Client = new Client();
+                //Client Client = new Client();
                 Service apiService = m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
                 Call<Review> call = apiService.getReview(movie_id, BuildConfig.TMDB_API_KEY);
 
@@ -198,7 +199,7 @@ public class DetailsActivity extends AppCompatActivity {
                         if (response.isSuccessful()){
                             if (response.body() != null){
                                 List<ReviewResult> reviewResults = response.body().getResults();
-                                MultiSnapRecyclerView recyclerView2 = (MultiSnapRecyclerView) findViewById(R.id.review_recyclerview);
+                                MultiSnapRecyclerView recyclerView2 =  findViewById(R.id.review_recyclerview);
                                 LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
                                 recyclerView2.setLayoutManager(firstManager);
                                 recyclerView2.setAdapter(new ReviewAdapter(getApplicationContext(), reviewResults));
@@ -299,7 +300,7 @@ public class DetailsActivity extends AppCompatActivity {
 
     @SuppressLint("StaticFieldLeak")
     private void checkStatus(final String movieName){
-        final MaterialFavoriteButton materialFavoriteButton = (MaterialFavoriteButton) findViewById(R.id.favorite_button);
+        final MaterialFavoriteButton materialFavoriteButton =  findViewById(R.id.favorite_button);
         new AsyncTask<Void, Void, Void>(){
             @Override
             protected Void doInBackground(Void... params){

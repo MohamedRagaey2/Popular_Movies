@@ -54,8 +54,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.MyViewHold
 
         public MyViewHolder(View view){
             super(view);
-            title = (TextView) view.findViewById(R.id.review_author);
-            url = (TextView) view.findViewById(R.id.review_link);
+            title =  view.findViewById(R.id.review_author);
+            url =  view.findViewById(R.id.review_link);
 
             view.setOnClickListener(new View.OnClickListener(){
 

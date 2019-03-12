@@ -28,7 +28,8 @@
                 android:layout_marginLeft="@dimen/Horizental_margin"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"/>
+                android:layout_alignParentStart="true"
+                android:contentDescription="@string/todo" />
 
             <TextView
                 android:id="@+id/title"

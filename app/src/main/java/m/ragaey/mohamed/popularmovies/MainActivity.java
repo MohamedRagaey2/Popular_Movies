@@ -16,7 +16,6 @@ import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import m.ragaey.mohamed.popularmovies.Adapter.MoviesAdapter;
-import m.ragaey.mohamed.popularmovies.Api.Client;
 import m.ragaey.mohamed.popularmovies.Api.Service;
 import m.ragaey.mohamed.popularmovies.Model.Movie;
 import m.ragaey.mohamed.popularmovies.Model.MoviesResponse;
@@ -45,10 +43,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private RecyclerView recyclerView;
     private MoviesAdapter adapter;
-    private List<Movie> movieList;
+
     ProgressDialog pd;
-    private SwipeRefreshLayout swipeContainer;
-    private AppCompatActivity activity = MainActivity.this;
+
 
     public static final String LOG_TAG = MoviesAdapter.class.getName();
 
@@ -57,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private static final String BUNDLE_RECYCLER_LAYOUT = "recycler_layout";
     private ArrayList<Movie> moviesInstance = new ArrayList<>();
 
-    int cacheSize = 10 * 1024 * 1024; // 10 MiB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     private void displayData() {
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView =  findViewById(R.id.recycler_view);
         adapter = new MoviesAdapter(this, moviesInstance);
         if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
@@ -96,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
 
     private void initViews() {
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView =  findViewById(R.id.recycler_view);
         if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         } else {
@@ -110,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     private void initViews2() {
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView = findViewById(R.id.recycler_view);
         getAllFavorite();
     }
 
@@ -152,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     return;
                 }
 
-                Client Client = new Client();
+                //Client Client = new Client();
                 Service apiService =
                         m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
                 Call<MoviesResponse> call = apiService.getPopularMovies(BuildConfig.TMDB_API_KEY);
@@ -193,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     return;
                 }
 
-                Client Client = new Client();
+                //Client Client = new Client();
                 Service apiService =
                         m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
                 Call<MoviesResponse> call = apiService.getTopRatedMovies(BuildConfig.TMDB_API_KEY);

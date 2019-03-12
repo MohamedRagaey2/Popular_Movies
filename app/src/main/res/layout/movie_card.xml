@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
@@ -12,7 +13,8 @@
         android:layout_gravity="center"
         android:layout_margin="@dimen/card_margin"
         android:elevation="3dp"
-        card_view:cardCornerRadius="@dimen/card_radius">
+        card_view:cardCornerRadius="@dimen/card_radius"
+        tools:targetApi="lollipop">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -23,7 +25,8 @@
                 android:layout_height="@dimen/Cover_height"
                 android:id="@+id/thumbnail"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="fitXY"/>
+                android:scaleType="fitXY"
+                android:contentDescription="@string/todo" />
 
             <TextView
                 android:id="@+id/title"
