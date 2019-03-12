@@ -43,10 +43,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private RecyclerView recyclerView;
     private MoviesAdapter adapter;
-
+    private List<Movie> movieList;
     ProgressDialog pd;
-
-
+    private AppCompatActivity activity = MainActivity.this;
     public static final String LOG_TAG = MoviesAdapter.class.getName();
 
     private static String LIST_STATE = "list_state";
@@ -101,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
+
         loadJSON();
         checkSortOrder();
     }
@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
                             if (response.body() != null) {
                                 List<Movie> movies = response.body().getResults();
-                                moviesInstance.clear();
+                               // moviesInstance.clear();
                                 moviesInstance.addAll(movies);
                                 recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movies));
                                 recyclerView.smoothScrollToPosition(0);
@@ -256,13 +256,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private String checkSortOrder () {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        return preferences.getString(
+        String sortOrder = preferences.getString(
                 this.getString(R.string.pref_sort_order_key),
                 this.getString(R.string.sort_most_popular)
         );
-    }
 
+        return sortOrder;
+    }
     private void getAllFavorite () {
 
         MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);

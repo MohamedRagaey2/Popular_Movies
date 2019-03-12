@@ -39,6 +39,7 @@ import java.util.Objects;
 
 import m.ragaey.mohamed.popularmovies.Adapter.ReviewAdapter;
 import m.ragaey.mohamed.popularmovies.Adapter.TrailerAdapter;
+import m.ragaey.mohamed.popularmovies.Api.Client;
 import m.ragaey.mohamed.popularmovies.Api.Service;
 import m.ragaey.mohamed.popularmovies.Model.Movie;
 import m.ragaey.mohamed.popularmovies.Model.Review;
@@ -64,6 +65,7 @@ public class DetailsActivity extends AppCompatActivity {
     private Movie favorite;
     private final AppCompatActivity activity = DetailsActivity.this;
     private AppDatabase mDb;
+    boolean exists;
     List<FavoriteEntry> entries = new ArrayList<>();
 
     Movie movie;
@@ -108,7 +110,7 @@ public class DetailsActivity extends AppCompatActivity {
                     .into(imageView);
 
 
-            nameOfMovie.setText(movieName);
+            //nameOfMovie.setText(movieName);
             plotSynopsis.setText(synopsis);
             userRating.setText(rating);
             releaseDate.setText(dateOfRelease);
@@ -144,14 +146,14 @@ public class DetailsActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void loadJSON(){
 
-        int movie_id = Objects.requireNonNull(getIntent().getExtras()).getInt("id");
+
 
         try{
             if (BuildConfig.TMDB_API_KEY.isEmpty()){
                 Toast.makeText(getApplicationContext(), "Please obtain your API Key from themoviedb.org", Toast.LENGTH_SHORT).show();
                 return;
             }
-            //Client Client = new Client();
+            Client Client = new Client();
             Service apiService = m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
             Call<TrailerResponse> call = apiService.getMovieTrailer(movie_id, BuildConfig.TMDB_API_KEY);
             call.enqueue(new Callback<TrailerResponse>() {
@@ -188,8 +190,9 @@ public class DetailsActivity extends AppCompatActivity {
         try {
             if (BuildConfig.TMDB_API_KEY.isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Please get your API Key", Toast.LENGTH_SHORT).show();
+                return;
             } else {
-                //Client Client = new Client();
+                Client Client = new Client();
                 Service apiService = m.ragaey.mohamed.popularmovies.Api.Client.getClient().create(Service.class);
                 Call<Review> call = apiService.getReview(movie_id, BuildConfig.TMDB_API_KEY);
 
@@ -262,6 +265,8 @@ public class DetailsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressLint("SetWorldReadable")
     private void shareContent(){
 
         Bitmap bitmap =getBitmapFromView(imageView);
